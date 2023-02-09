@@ -5,16 +5,19 @@ import java.util.List;
 
 public class BitWriter {
     private final int defaultCapacity = 1500;
-    private Byte[] bytes;
+    private int capacity;
+    private byte[] bytes;
     private byte buffer = 0;
     private final float defaultPrecision = 0.000001f;
     private long bitsCount = 0;
     private int bytePoint = 0;
     public BitWriter(){
-        bytes = new Byte[defaultCapacity];
+        bytes = new byte[defaultCapacity];
+        capacity = defaultCapacity;
     }
     public BitWriter(int capacity){
-        bytes = new Byte[capacity];
+        bytes = new byte[capacity];
+        this.capacity = capacity;
     }
     private void writeBits(int bitCount, int value) {
         int mask = (1 << bitCount) - 1;
@@ -33,8 +36,9 @@ public class BitWriter {
             if (bitsCount % 8 == 0) {
                 bytes[bytePoint++] = buffer;
                 buffer = 0;
-
             }
+            if(bytePoint == capacity)
+                doubleCapacity();
         }
     }
 
@@ -106,7 +110,7 @@ public class BitWriter {
         }
     }
 
-    public Byte[] getBytes() {
+    public byte[] getBytes() {
         return bytes;
     }
 
@@ -120,5 +124,10 @@ public class BitWriter {
         }
         return Math.min(value, max);
     }
-
+    private void doubleCapacity(){
+        capacity *= 2;
+        byte[] newArray = new byte[capacity];
+        System.arraycopy(bytes, 0, newArray, 0, bytes.length);
+        bytes = newArray;
+    }
 }
