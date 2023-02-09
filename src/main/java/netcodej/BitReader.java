@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BitReader {
-    private List<Byte> bytes = new ArrayList<>();
+    private Byte[] bytes;
     private int point = 0;
 
-    public BitReader(Object[] data) {
-        for (var item : data)
-            bytes.add((Byte) item);
+    public BitReader(Byte[] data) {
+        bytes = data;
     }
 
     public int readBits(int count) {
@@ -17,7 +16,7 @@ public class BitReader {
         while (count > 0) {
             int mask = 1 << (7 - (point % 8));
             re <<= 1;
-            re += (bytes.get(point / 8) & mask) == 0 ? 0 : 1;
+            re += (bytes[point / 8] & mask) == 0 ? 0 : 1;
             count -= 1;
             point += 1;
         }
@@ -43,22 +42,26 @@ public class BitReader {
         int integerValue = readBits(limit.BitCount);
         return integerValue + limit.min;
     }
-    public Result<Float> readFloatIfChanged(float min, float max, float precision) {
-        return readFloatIfChanged(new LimitFloat(min, max, precision));
+
+    public float readFloatIfChanged(float min, float max, float precision, float def) {
+        return readFloatIfChanged(new LimitFloat(min, max, precision), def);
     }
-    public Result<Float> readFloatIfChanged(LimitFloat limit) {
+
+    public float readFloatIfChanged(LimitFloat limit, float def) {
         int flag = readBits(1);
-        if(flag == 1)
-            return Result.ok(readFloat(limit));
-        return Result.fail("Значение не изменилось");
+        if (flag == 1)
+            return readFloat(limit);
+        return def;
     }
-    public Result<Integer> readIntIfChanged(int min, int max) {
-        return readIntIfChanged(new LimitInt(min, max));
+
+    public int readIntIfChanged(int min, int max, int def) {
+        return readIntIfChanged(new LimitInt(min, max), def);
     }
-    public Result<Integer> readIntIfChanged(LimitInt limit) {
+
+    public int readIntIfChanged(LimitInt limit, int def) {
         int flag = readBits(1);
-        if(flag == 1)
-            return Result.ok(readInt(limit));
-        return Result.fail("Значение не изменилось");
+        if (flag == 1)
+            return readInt(limit);
+        return def;
     }
 }

@@ -4,11 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BitWriter {
-    private List<Byte> bytes = new ArrayList<>();
+    private final int defaultCapacity = 1500;
+    private Byte[] bytes;
     private byte buffer = 0;
-    private float defaultPrecision = 0.000001f;
+    private final float defaultPrecision = 0.000001f;
     private long bitsCount = 0;
-
+    private int bytePoint = 0;
+    public BitWriter(){
+        bytes = new Byte[defaultCapacity];
+    }
+    public BitWriter(int capacity){
+        bytes = new Byte[capacity];
+    }
     private void writeBits(int bitCount, int value) {
         int mask = (1 << bitCount) - 1;
         value &= mask;
@@ -24,8 +31,9 @@ public class BitWriter {
             bitCount -= count;
             bitsCount += count;
             if (bitsCount % 8 == 0) {
-                bytes.add(buffer);
+                bytes[bytePoint++] = buffer;
                 buffer = 0;
+
             }
         }
     }
@@ -92,14 +100,14 @@ public class BitWriter {
 
     public void flush() {
         if(bitsCount % 8 != 0){
-            bytes.add(buffer);
-            bitsCount = bytes.stream().count() * 8;
+            bytes[bytePoint++] = buffer;
+            bitsCount = bytePoint * 8L;
             buffer = 0;
         }
     }
 
-    public Object[] getBytes() {
-        return bytes.toArray();
+    public Byte[] getBytes() {
+        return bytes;
     }
 
     public long getBitsCount() {
